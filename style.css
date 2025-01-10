@@ -1,0 +1,13 @@
+*,::before,::after{
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+}
+
+  ul{list-style-type: none;}
+
+  #purchase-btn{
+    background-color: yellow;
+    border-radius: 2px solid black;
+    color: black;
+  }
