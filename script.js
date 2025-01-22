@@ -12,45 +12,86 @@ let cid = [
 ];
 
 const cashEntered = document.getElementById("cash");
-const purchseBtn = document.getElementById("purchase-btn");
-const changeText = document.getElementById("change-due");
-const drawerText = document.getElementById("drawer-list");
-let totalCash;
-let totalDue = totalCash - cashEntered.value;
-const changeList = document.getElementById("change-list");
+const purchaseBtn = document.getElementById("purchase-btn");
+const changeDueTxt = document.getElementById("change-due");
+const cidText = document.getElementById("cid");
 
-purchseBtn.addEventListener("click", EnoughCashOrNot);
-
-function EnoughCashOrNot() {
-  let cash = cashEntered.value;
-  if (cash < price) {
+function EnoughCash() {
+  if (cashEntered.value < price)
     alert("Customer does not have enough money to purchase the item");
-  } else {
-    return cash - price;
-  }
 }
 
-function cidTotalCash() {
+function NoDueCheck() { }
+
+function cidDisplay(array) {
   let total = 0;
-  cid.forEach(function (item) {
-    total += item[1]; // Add the second element (the numeric value) to the total
+  array.forEach((i) => {
+    cidText.innerHTML += `${i[0]}: $${i[1]}<br>`;
   });
   return total;
 }
+cidDisplay(cid);
 
-function CheckIfCidIsEnough() {
-  let cidTotalCash = cidTotalCash();
-  let cashDue = EnoughCashOrNot();
-  if (cidTotalCash < cashDue) {//check if the cash in drawer is enough    
-    changeText.innerText += "Status: INSUFFICIENT_FUNDS";
+function DueCalc() {
+  if (cashEntered.value == price) {
+    changeDueTxt.innerText = "No change due - customer paid with exact cash";
+    return 1;
   } else {
-    if (cidTotalCash === cashDue) {//check if the cash in drawer and the cash due is equal
-      changeText.innerText = "";
-      changeText.innerText += "Status: CLOSED";
-    }else{
-       changeText.innerText = "";
-        changeText.innerText += "Status: OPEN";
-  
-}
+    let changeDue = cashEntered.value - price; // The change Due
+    //the description of the name of the currency and the value of the currency in dollars.
+    let denominations = [
+      ["PENNY", 0.01],
+      ["NICKEL", 0.05],
+      ["DIME", 0.1],
+      ["QUARTER", 0.25],
+      ["ONE", 1],
+      ["FIVE", 5],
+      ["TEN", 10],
+      ["TWENTY", 20],
+      ["ONE HUNDRED", 100],
+    ];
+
+    let register = [...cid].reverse();
+    let change = [];
+
+    for (let [name, value] of denominations.reverse()) {
+      let currentDenom = register.find(([currency]) => currency === name);
+      if (!currentDenom) continue;
+      let [currency, totalInCid] = currentDenom;
+      let toGive = 0;
+
+      while (changeDue >= value && totalInCid > 0) {
+        toGive += value;
+        totalInCid -= value;
+        changeDue -= value;
+        changeDue = Math.round(changeDue * 100) / 100; // Avoid floating point issues
+      }
+      if (toGive > 0) {
+        change.push([currency, toGive]);
+      }
+    }
+
+    if (changeDue > 0) {
+      return "Status: INSUFFICIENT_FUNDS";
+    }
+    return change;
   }
 }
+
+function changeDisplay(array) {
+  if(DueCalc() ===1){
+    DueCalc();
+  }
+  else{ let total = 0;
+  changeDueTxt.innerHTML += `<p>Status:OPEN</p><br>`;
+  array.forEach((i) => {
+    changeDueTxt.innerHTML += `: $${i}<br>`;
+    total += i[1];
+  });
+  return total;
+}
+}
+
+purchaseBtn.addEventListener("click", () => {
+  EnoughCash(), NoDueCheck(), changeDisplay(DueCalc());
+});
